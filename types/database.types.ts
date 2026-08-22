@@ -244,8 +244,20 @@ export interface Coupon {
 // require this field to correctly resolve .insert()/.update() overloads.
 // Without it, TypeScript silently falls back to `never` on those calls
 // even though .select() still appears to work fine.
+//
+// NOTE: `__InternalSupabase` is required by @supabase/supabase-js v2.50+
+// (and the postgrest-js versions it bundles). Newer versions of the client
+// expect generated Database types to carry this PostgrestVersion marker;
+// without it, TypeScript's generic resolution on the client falls back to
+// a mismatched internal type, which breaks .insert()/.update() calls with
+// confusing "not assignable to type 'never[]'" errors while .select() still
+// appears to work. If a future postgrest-js upgrade changes the expected
+// version string, TypeScript will report the correct literal it wants.
 // ----------------------------------------------------------------------------
 export interface Database {
+  __InternalSupabase: {
+    PostgrestVersion: "13";
+  };
   public: {
     Tables: {
       products: {
