@@ -2,12 +2,11 @@
 // Use this inside Server Components, Route Handlers, and Server Actions.
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
-import type { Database } from "@/types/database.types";
 
 export async function createClient() {
   const cookieStore = await cookies();
 
-  return createServerClient<Database>(
+  return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
@@ -37,7 +36,7 @@ export async function createClient() {
 //
 // import { createClient as createAdminClient } from "@supabase/supabase-js";
 // export function createAdmin() {
-//   return createAdminClient<Database>(
+//   return createAdminClient(
 //     process.env.NEXT_PUBLIC_SUPABASE_URL!,
 //     process.env.SUPABASE_SERVICE_ROLE_KEY!,
 //     { auth: { persistSession: false } }
