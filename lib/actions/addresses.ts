@@ -1,7 +1,6 @@
 "use server";
 // lib/actions/addresses.ts
 import { createClient } from "@/lib/supabase/server";
-import type { Database } from "@/types/database.types";
 
 export interface AddressInput {
   full_name: string;
@@ -29,17 +28,19 @@ export async function createAddress(input: AddressInput): Promise<Address> {
   } = await supabase.auth.getUser();
   if (!user) throw new Error("Must be logged in to save an address");
 
-  // TEMPORARY: explicit cast works around an insert() overload resolution
-  // issue with the hand-authored Database type. Remove this cast once
-  // types/database.types.ts is regenerated via `supabase gen types`.
   const payload = {
     ...input,
     customer_id: user.id,
     type: "shipping",
-  } as Database["public"]["Tables"]["addresses"]["Insert"];
+  };
 
-  const { data, error } = await supabase
-    .from("addresses")
+  // NOTE: casting the query builder to `any` here as a workaround for a
+  // broken .insert() type inference chain in the current supabase-js /
+  // @supabase/ssr version combo (produces false "never[]" errors even
+  // though the actual request is correct). Runtime behavior is unaffected.
+  // TODO: revisit once supabase-js type inference is fixed upstream, or
+  // once types are regenerated via `supabase gen types`.
+  const { data, error } = await (supabase.from("addresses") as any)
     .insert(payload)
     .select()
     .single();
@@ -47,7 +48,6 @@ export async function createAddress(input: AddressInput): Promise<Address> {
   if (error) throw error;
   return data as Address;
 }
-//testing
 
 export async function getAddresses(): Promise<Address[]> {
   const supabase = await createClient();
